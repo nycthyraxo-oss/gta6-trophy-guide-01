@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leonida Ledger — GTA VI Trophy Guide &amp; Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="masthead">
+  <div>
+    <p class="kicker">Grand Theft Auto VI &middot; PlayStation 5 &middot; 55 trophies</p>
+    <h1>Leonida Ledger</h1>
+    <p class="tagline">The offline guide and tracker for every GTA VI trophy — official names, descriptions and grades, a guide in our own words with its sources, a platinum roadmap, and the one missable trophy flagged before it can slip away.</p>
+  </div>
+  <div class="progress-box" aria-label="Platinum progress">
+    <p class="progress-line"><strong id="progressText">0 of 55 earned</strong> <span id="progressPct">0%</span></p>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="55" aria-valuenow="0" id="progressBar"><span id="progressFill"></span></div>
+    <ul class="grade-counts" id="gradeCounts"></ul>
+    <p class="progress-note">Same 55 trophies on Xbox, worth 1,000 Gamerscore. All single-player — no online or difficulty trophies. About 200 hours to the platinum.</p>
+  </div>
+</header>
+
+<nav class="views" aria-label="Views">
+  <a href="?view=guide" data-view="guide">Guide &amp; tracker</a>
+  <a href="?view=roadmap" data-view="roadmap">Platinum roadmap</a>
+</nav>
+
+<section id="roadmap" aria-labelledby="roadmapTitle">
+  <h2 id="roadmapTitle">Platinum roadmap — five phases</h2>
+  <p class="section-intro">Built from the official descriptions: which chapters and missions, which collectibles and counts, in what order. No mission replay and no New Game Plus — keep a manual save at the start of every chapter, and one untouched save before the final mission. Cheats disable trophies and saving on that save.</p>
+  <ol class="phases">
+    <li><h3>Phase 1 — Chapter 1 setup</h3><p>Play Gone Fishing and the Chapter 1 missions. <strong>Do the missable meditation first:</strong> after Down to Earth, in the morning, follow Lucia to the balcony of Jason&rsquo;s house and accept the optional task. It disappears after Chapter 1. Keep a Chapter 1 save until Positive Mental Attitude pops. Start gym training early — both characters need maximum Strength.</p></li>
+    <li><h3>Phase 2 — Chapter 2 partner unlocks</h3><p>Complete Moses to open the Scooter Bros app and Daily Driver to unlock garage purchases. Buy garages early — every vehicle registration needs a free space. Start Billy&rsquo;s optional missions (Thrillbillies, Twist Wrist Smash Grab), Kingpin Bowling, and the stranger strands as they appear.</p></li>
+    <li><h3>Phase 3 — Chapters 3–4 robberies</h3><p>Race Yago the moment its hourglass appears in Chapter 3. Do Yasmani&rsquo;s Jewelry Jobs for the Snap Gun, then rob a jewelry store unseen. Near the end of Chapter 4, do That&rsquo;s Where The Money Is to unlock bank vaults — bring your partner, rob vaults, launder the Marked Bills, and escape a 4-star wanted level together.</p></li>
+    <li><h3>Phase 4 — Post-story side finales</h3><p>Finish the stranger strands (8 counted — Andy, Billy and Tyrone do not count) and the final missions for Andy (Lucia-only), Billy, Tyrone (Jason-only), Kenton and Randy. Hunt Bret&rsquo;s unique animal, steal the VCIA plane, and take the Rhino at Mile Zero.</p></li>
+    <li><h3>Phase 5 — The 100% grind</h3><p>Open Progress &gt; Stats &gt; 100% Completion and clear it: 300 stunts, 70 of 80 Challenges, 200 of 277 vehicles scanned, 100 WAiNK locations, 8 bank vaults, 39 illegal operations, 3 card sets, 42 shooting-range golds, 14 Top Fun locations, 8 garages, 10 Scooter Bros registrations. Nothing here is missable.</p></li>
+  </ol>
+  <p class="missable-callout"><strong>Missable:</strong> only one trophy can be missed — <strong>Positive Mental Attitude</strong>. Every other trophy can be earned after the story from your saves.</p>
+</section>
+
+<section id="guide" aria-labelledby="guideTitle">
+  <h2 id="guideTitle">Trophy guide &amp; tracker</h2>
+  <div class="controls">
+    <label class="search">Search <input id="search" type="search" placeholder="Name, description or guide text…" autocomplete="off"></label>
+    <label>Grade <select id="grade"><option value="all">All grades</option><option value="platinum">Platinum</option><option value="gold">Gold</option><option value="silver">Silver</option><option value="bronze">Bronze</option></select></label>
+    <label>Kind <select id="kind"><option value="all">All kinds</option><option value="story">Story</option><option value="side">Side</option><option value="collectible">Collectible</option><option value="combat">Combat</option><option value="exploration">Exploration</option><option value="robbery">Robbery</option><option value="completion">Completion</option></select></label>
+    <label>Show <select id="earned"><option value="all">All trophies</option><option value="earned">Earned only</option><option value="remaining">Remaining only</option></select></label>
+    <label class="check"><input id="missableOnly" type="checkbox"> Missable only</label>
+    <label class="check spoiler"><input id="spoilers" type="checkbox" checked> Hide spoilers <span class="hint">(hidden trophies stay secret until earned)</span></label>
+  </div>
+  <p class="controls-row">
+    <button id="export" type="button">Export progress</button>
+    <label class="import">Import progress <input id="import" type="file" accept="application/json,.json"></label>
+    <button id="reset" type="button">Reset progress</button>
+    <span id="resultCount" class="result-count" aria-live="polite"></span>
+  </p>
+  <div id="detail" class="detail" hidden></div>
+  <ul id="cards" class="cards"></ul>
+  <p id="empty" class="empty" hidden>No trophies match these filters. Clear the search or widen a filter.</p>
+</section>
+
+<footer>
+  <h2>Sources</h2>
+  <p>Official trophy names, descriptions and grades as listed by Exophase and PSNProfiles on 2026-11-18 (via the kit starter). Guide facts drawn from, and cited per trophy to: <a href="https://outputlag.com/guides/gta-6-trophy-list/">Output Lag — GTA 6 trophy list</a>; <a href="https://www.gtabase.com/articles/gta-6/gta-6-achievements-trophies-list-ps5-xbox-series">GTABase — GTA 6 achievements &amp; trophies list</a>; <a href="https://playday.one/2026/11/18/gta-6-trophy-achievement-list/">Playday.one — GTA 6 trophy &amp; achievement list</a>; <a href="https://www.trueachievements.com/news/grand-theft-auto-6-xbox-achievements">TrueAchievements — GTA 6 Xbox achievements</a>; <a href="https://www.keengamer.com/articles/guides/gta-6-trophy-guide-platinum-roadmap-all-55-trophies/">KeenGamer — GTA 6 trophy guide &amp; platinum roadmap</a>; <a href="https://press-start.com.au/news/2026/11/18/gta-6-trophy-list/">Press Start — GTA 6 trophy list</a>. Every guide above is written in our own words; sources are cited, never copied.</p>
+  <p class="disclaimer">Leonida Ledger is an unofficial fan guide. It is not affiliated with, endorsed by, or connected to Rockstar Games or Take-Two Interactive. Grand Theft Auto and GTA are trademarks of Take-Two Interactive. No Rockstar logo, artwork, box art or game screenshot appears anywhere in this guide — the look is entirely our own. Progress is stored only in your browser (localStorage); nothing leaves your device.</p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
