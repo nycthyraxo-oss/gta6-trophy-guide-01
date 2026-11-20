@@ -24,9 +24,26 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 // Leonida Ledger check, written for this entry: the guide's data file must parse
 // and hold exactly the official 55 trophies before anything is copied out.
+// v2 adds: every trophy carries a non-blank guide, a roadmap phase 1-5 and a
+// risk tier, and every countable target is a positive integer — the app's
+// two-level tracking and risk views trust these fields.
 const trophyData = JSON.parse(readFileSync(join(here, 'app', 'data', 'trophies.json'), 'utf8'));
 if (!Array.isArray(trophyData.trophies) || trophyData.trophies.length !== 55) {
   throw new Error(`Leonida Ledger expects 55 trophies, found ${trophyData.trophies?.length ?? 'none'}`);
+}
+for (const t of trophyData.trophies) {
+  if (typeof t.guide !== 'string' || t.guide.trim() === '') {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no guide`);
+  }
+  if (!Number.isInteger(t.phase) || t.phase < 1 || t.phase > 5) {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no roadmap phase 1-5`);
+  }
+  if (!['high', 'watch', 'safe'].includes(t.risk)) {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no risk tier`);
+  }
+  if (t.count !== undefined && (!Number.isInteger(t.count) || t.count <= 0 || typeof t.countUnit !== 'string')) {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has a bad count target`);
+  }
 }
 
 mkdirSync(out, { recursive: true });

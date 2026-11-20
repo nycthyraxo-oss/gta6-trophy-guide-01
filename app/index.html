@@ -21,24 +21,16 @@
   </div>
 </header>
 
+<p class="audit-strip" id="auditStrip" aria-label="Data audit"></p>
+
 <nav class="views" aria-label="Views">
   <a href="?view=guide" data-view="guide">Guide &amp; tracker</a>
   <a href="?view=roadmap" data-view="roadmap">Platinum roadmap</a>
+  <a href="?view=missables" data-view="missables">Missables</a>
+  <a href="?view=sources" data-view="sources">Sources</a>
 </nav>
 
-<section id="roadmap" aria-labelledby="roadmapTitle">
-  <h2 id="roadmapTitle">Platinum roadmap — five phases</h2>
-  <p class="section-intro">Built from the official descriptions: which chapters and missions, which collectibles and counts, in what order. No mission replay and no New Game Plus — keep a manual save at the start of every chapter, and one untouched save before the final mission. Cheats disable trophies and saving on that save.</p>
-  <ol class="phases">
-    <li><h3>Phase 1 — Chapter 1 setup</h3><p>Play Gone Fishing and the Chapter 1 missions. <strong>Do the missable meditation first:</strong> after Down to Earth, in the morning, follow Lucia to the balcony of Jason&rsquo;s house and accept the optional task. It disappears after Chapter 1. Keep a Chapter 1 save until Positive Mental Attitude pops. Start gym training early — both characters need maximum Strength.</p></li>
-    <li><h3>Phase 2 — Chapter 2 partner unlocks</h3><p>Complete Moses to open the Scooter Bros app and Daily Driver to unlock garage purchases. Buy garages early — every vehicle registration needs a free space. Start Billy&rsquo;s optional missions (Thrillbillies, Twist Wrist Smash Grab), Kingpin Bowling, and the stranger strands as they appear.</p></li>
-    <li><h3>Phase 3 — Chapters 3–4 robberies</h3><p>Race Yago the moment its hourglass appears in Chapter 3. Do Yasmani&rsquo;s Jewelry Jobs for the Snap Gun, then rob a jewelry store unseen. Near the end of Chapter 4, do That&rsquo;s Where The Money Is to unlock bank vaults — bring your partner, rob vaults, launder the Marked Bills, and escape a 4-star wanted level together.</p></li>
-    <li><h3>Phase 4 — Post-story side finales</h3><p>Finish the stranger strands (8 counted — Andy, Billy and Tyrone do not count) and the final missions for Andy (Lucia-only), Billy, Tyrone (Jason-only), Kenton and Randy. Hunt Bret&rsquo;s unique animal, steal the VCIA plane, and take the Rhino at Mile Zero.</p></li>
-    <li><h3>Phase 5 — The 100% grind</h3><p>Open Progress &gt; Stats &gt; 100% Completion and clear it: 300 stunts, 70 of 80 Challenges, 200 of 277 vehicles scanned, 100 WAiNK locations, 8 bank vaults, 39 illegal operations, 3 card sets, 42 shooting-range golds, 14 Top Fun locations, 8 garages, 10 Scooter Bros registrations. Nothing here is missable.</p></li>
-  </ol>
-  <p class="missable-callout"><strong>Missable:</strong> only one trophy can be missed — <strong>Positive Mental Attitude</strong>. Every other trophy can be earned after the story from your saves.</p>
-</section>
-
+<main>
 <section id="guide" aria-labelledby="guideTitle">
   <h2 id="guideTitle">Trophy guide &amp; tracker</h2>
   <div class="controls">
@@ -55,14 +47,53 @@
     <button id="reset" type="button">Reset progress</button>
     <span id="resultCount" class="result-count" aria-live="polite"></span>
   </p>
-  <div id="detail" class="detail" hidden></div>
-  <ul id="cards" class="cards"></ul>
-  <p id="empty" class="empty" hidden>No trophies match these filters. Clear the search or widen a filter.</p>
+  <div class="dashboard">
+    <div class="col-checklist">
+      <ul id="cards" class="cards"></ul>
+      <p id="empty" class="empty" hidden>No trophies match these filters. Clear the search or widen a filter.</p>
+    </div>
+    <div class="col-guide">
+      <div id="detail" class="detail"></div>
+    </div>
+    <aside class="col-rail" aria-label="Next up and sources">
+      <div class="rail-box">
+        <h3>Next up</h3>
+        <p class="rail-note">Roadmap order, missable first. Tick trophies off and the queue moves on.</p>
+        <ol id="nextUp" class="next-up"></ol>
+      </div>
+      <div class="rail-box">
+        <h3>Sources for this guide</h3>
+        <div id="railSources"></div>
+      </div>
+      <div class="rail-box">
+        <h3>Counts tracked</h3>
+        <p class="rail-note" id="countsNote"></p>
+      </div>
+    </aside>
+  </div>
 </section>
 
+<section id="roadmap" aria-labelledby="roadmapTitle" hidden>
+  <h2 id="roadmapTitle">Platinum roadmap — five phases</h2>
+  <p class="section-intro">Built from the official descriptions: which chapters and missions, which collectibles and counts, in what order. No mission replay and no New Game Plus — keep a manual save at the start of every chapter, and one untouched save before the final mission. Cheats disable trophies and saving on that save.</p>
+  <ol class="phases" id="phases"></ol>
+  <p class="missable-callout"><strong>Missable:</strong> only one trophy can be missed — <strong>Positive Mental Attitude</strong>. Every other trophy can be earned after the story from your saves.</p>
+</section>
+
+<section id="missables" aria-labelledby="missablesTitle" hidden>
+  <h2 id="missablesTitle">Missables — risk tiers</h2>
+  <p class="section-intro">One trophy can truly be missed. Two more are easy to half-finish or time-sensitive, so they sit on the watch list. Everything else can be earned after the story — the save discipline below covers all of it: a manual save at the start of every chapter, one untouched save before the final mission, and never cheat on the trophy save.</p>
+  <div id="riskTiers"></div>
+</section>
+
+<section id="sources" aria-labelledby="sourcesTitle" hidden>
+  <h2 id="sourcesTitle">Sources — bibliography</h2>
+  <p class="section-intro">Every guide in this ledger is written in our own words and cites its sources per trophy. The official list itself comes from Exophase and PSNProfiles (via the kit starter, read 2026-11-18); guide facts were read from the sites below on 2026-11-19, and the one disputed count was re-read on 2026-11-21. A source is cited, never copied — follow a link to read it yourself.</p>
+  <div id="bibliography"></div>
+</section>
+</main>
+
 <footer>
-  <h2>Sources</h2>
-  <p>Official trophy names, descriptions and grades as listed by Exophase and PSNProfiles on 2026-11-18 (via the kit starter). Guide facts drawn from, and cited per trophy to: <a href="https://outputlag.com/guides/gta-6-trophy-list/">Output Lag — GTA 6 trophy list</a>; <a href="https://www.gtabase.com/articles/gta-6/gta-6-achievements-trophies-list-ps5-xbox-series">GTABase — GTA 6 achievements &amp; trophies list</a>; <a href="https://playday.one/2026/11/18/gta-6-trophy-achievement-list/">Playday.one — GTA 6 trophy &amp; achievement list</a>; <a href="https://www.trueachievements.com/news/grand-theft-auto-6-xbox-achievements">TrueAchievements — GTA 6 Xbox achievements</a>; <a href="https://www.keengamer.com/articles/guides/gta-6-trophy-guide-platinum-roadmap-all-55-trophies/">KeenGamer — GTA 6 trophy guide &amp; platinum roadmap</a>; <a href="https://press-start.com.au/news/2026/11/18/gta-6-trophy-list/">Press Start — GTA 6 trophy list</a>. Every guide above is written in our own words; sources are cited, never copied.</p>
   <p class="disclaimer">Leonida Ledger is an unofficial fan guide. It is not affiliated with, endorsed by, or connected to Rockstar Games or Take-Two Interactive. Grand Theft Auto and GTA are trademarks of Take-Two Interactive. No Rockstar logo, artwork, box art or game screenshot appears anywhere in this guide — the look is entirely our own. Progress is stored only in your browser (localStorage); nothing leaves your device.</p>
 </footer>
 <script type="module" src="app.js"></script>
