@@ -1,9 +1,10 @@
-// Leonida Ledger v2: a data-driven GTA VI trophy guide and tracker.
+// Leonida Ledger v3: a data-driven GTA VI trophy guide and tracker.
 // One source of truth (data/trophies.json). Three-column dashboard:
 // checklist | guide pane | Next Up + sources rail. Two-level tracking
 // (trophy checkbox + per-count progress), risk-tiered missables, a sources
 // bibliography, an always-visible audit strip computed from the data,
-// filters, a spoiler setting, deep-link URL parameters, export / import.
+// fuzzy text search, filters, a spoiler setting, deep-link URL parameters,
+// export / import.
 // No network at run time beyond fetching the local data file; no dependencies.
 const KEY = 'leonida-ledger-v2';
 const KEY_V1 = 'leonida-ledger-v1';
@@ -105,17 +106,18 @@ function countDone(t) {
   const p = progress[t.id];
   if (!p) return 0;
   if (p.items) return p.items.filter(Boolean).length;
-  return Math.min(p.done ?? 0, t.count ?? 0);
+  return Math.min(p.done ?? 0, t.countTarget ?? 0);
 }
 
 function countTotalDone() {
-  // Dollar totals (counts >= 10000) are money, not sub-goals: keep them out
-  // of the aggregate so the rail note reads as goals ticked, not dollars.
+  // Dollar totals (count targets >= 10000) are money, not sub-goals: keep
+  // them out of the aggregate so the rail note reads as goals ticked, not
+  // dollars.
   let done = 0;
   let total = 0;
   for (const t of trophies) {
-    if (!t.count || t.count >= 10000) continue;
-    total += t.count;
+    if (!t.countTarget || t.countTarget >= 10000) continue;
+    total += t.countTarget;
     done += countDone(t);
   }
   return { done, total };
@@ -134,7 +136,7 @@ function renderAudit() {
   const citations = trophies.reduce((n, t) => n + (t.sources ?? []).length, 0);
   const sites = new Set(trophies.flatMap((t) => (t.sources ?? []).map((s) => s.name))).size;
   const steps = trophies.reduce((n, t) => n + (t.steps ?? []).length, 0);
-  const counted = trophies.filter((t) => t.count).length;
+  const counted = trophies.filter((t) => t.countTarget).length;
   const disputes = trophies.filter((t) => t.dispute).length;
   const unconfirmed = trophies.filter((t) => t.guide.startsWith('UNCONFIRMED')).length;
   const high = trophies.filter((t) => t.risk === 'high').length;
@@ -177,7 +179,80 @@ function renderProgress() {
     ul.append(el('li', null, `${gradeLabel(g)} ${c.earned}/${c.total}`));
   }
   const ct = countTotalDone();
-  countsNoteEl.textContent = `${ct.done} of ${ct.total} counted sub-goals ticked across ${trophies.filter((t) => t.count && t.count < 10000).length} trophies (spots, vaults, garages, stunts and more; dollar totals are tracked per trophy). Open a trophy's guide to tick its count.`;
+  countsNoteEl.textContent = `${ct.done} of ${ct.total} counted sub-goals ticked across ${trophies.filter((t) => t.countTarget && t.countTarget < 10000).length} trophies (spots, vaults, garages, stunts and more; dollar totals are tracked per trophy). Open a trophy's guide to tick its count.`;
+}
+
+// Fuzzy search: the query is split into tokens; a trophy matches when every
+// token matches somewhere in its name, description, guide or chapter. A token
+// matches a word when it is a prefix of it, a subsequence of it, or within a
+// small edit distance of it (1 edit, or 2 for longer tokens) — so a typo like
+// "meditaion" still finds the meditation trophy. An exact substring anywhere
+// in the text always matches, so plain search behaves exactly as before.
+function normalizeText(s) {
+  return s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+}
+
+function editDistance(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (cur[j] < best) best = cur[j];
+    }
+    if (best > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+function isSubsequence(needle, haystack) {
+  let i = 0;
+  for (const ch of haystack) {
+    if (ch === needle[i]) i += 1;
+    if (i === needle.length) return true;
+  }
+  return i === needle.length;
+}
+
+function tokenMatchesWord(token, word) {
+  if (word.startsWith(token)) return true;
+  if (token.length >= 3 && isSubsequence(token, word)) return true;
+  if (token.length >= 4) {
+    const maxEdits = token.length >= 7 ? 2 : 1;
+    if (editDistance(token, word, maxEdits) <= maxEdits) return true;
+  }
+  return false;
+}
+
+function fuzzyMatch(query, text) {
+  const q = normalizeText(query).trim();
+  if (!q) return true;
+  const hay = normalizeText(text);
+  if (hay.includes(q)) return true;
+  const words = hay.split(/[^a-z0-9]+/).filter(Boolean);
+  return q.split(/\s+/).every((token) => words.some((w) => tokenMatchesWord(token, w)));
+}
+
+// Wrap the first exact (case-insensitive) occurrence of the query in a <mark>
+// so the reader sees why a row matched. A fuzzy-only match gets no mark — the
+// name is shown plain rather than guessing which letters to light up. Hidden
+// trophies never reach this: their placeholder is rendered instead, so a
+// highlight can never leak a hidden name.
+function highlightedName(name, query) {
+  const frag = document.createDocumentFragment();
+  const q = query.trim();
+  const at = q ? name.toLowerCase().indexOf(q.toLowerCase()) : -1;
+  if (at === -1) {
+    frag.append(name);
+    return frag;
+  }
+  frag.append(name.slice(0, at));
+  frag.append(el('mark', null, name.slice(at, at + q.length)));
+  frag.append(name.slice(at + q.length));
+  return frag;
 }
 
 function filtered() {
@@ -188,7 +263,7 @@ function filtered() {
     if (earnedEl.value === 'earned' && !earned.has(t.id)) return false;
     if (earnedEl.value === 'remaining' && earned.has(t.id)) return false;
     if (missableEl.checked && !t.missable) return false;
-    if (q && !(t.name + ' ' + t.description + ' ' + t.guide + ' ' + (t.chapter ?? '')).toLowerCase().includes(q)) return false;
+    if (q && !fuzzyMatch(q, t.name + ' ' + t.description + ' ' + t.guide + ' ' + (t.chapter ?? ''))) return false;
     return true;
   });
 }
@@ -227,7 +302,8 @@ function rowBody(t, hidden, index) {
   head.append(earnedCheckbox(t, hidden));
   head.append(badges(t));
   row.append(head);
-  const nameBtn = el('button', 'trophy-name trophy-link', hidden ? HIDDEN_PLACEHOLDER : t.name);
+  const nameBtn = el('button', 'trophy-name trophy-link');
+  nameBtn.append(hidden ? HIDDEN_PLACEHOLDER : highlightedName(t.name, searchEl.value));
   nameBtn.type = 'button';
   nameBtn.addEventListener('click', () => {
     selectedId = t.id;
@@ -239,13 +315,13 @@ function rowBody(t, hidden, index) {
     row.append(el('p', 'hidden-note', 'Its name, description and guide stay hidden until you earn it. Flip the spoiler setting off to see it now.'));
   } else {
     row.append(el('blockquote', 'official', t.description));
-    if (t.count) {
+    if (t.countTarget) {
       const done = countDone(t);
       const wrap = el('p', 'count-line');
-      wrap.append(el('span', 'count-text', `${done} / ${t.count} ${t.countUnit}`));
+      wrap.append(el('span', 'count-text', `${done} / ${t.countTarget} ${t.countUnit}`));
       const bar = el('span', 'mini-bar');
       const fill = el('span', 'mini-fill');
-      fill.style.width = `${t.count ? (done / t.count) * 100 : 0}%`;
+      fill.style.width = `${t.countTarget ? (done / t.countTarget) * 100 : 0}%`;
       bar.append(fill);
       wrap.append(bar);
       row.append(wrap);
@@ -270,18 +346,18 @@ function sourceList(t) {
 function countControls(t) {
   const wrap = el('div', 'count-controls');
   const done = countDone(t);
-  wrap.append(el('h4', 'count-title', `Track the count — ${done} of ${t.count} ${t.countUnit}`));
-  if (t.count <= ITEM_CHECKBOX_LIMIT) {
-    const p = progress[t.id]?.items ? progress[t.id] : { items: Array(t.count).fill(false) };
+  wrap.append(el('h4', 'count-title', `Track the count — ${done} of ${t.countTarget} ${t.countUnit}`));
+  if (t.countTarget <= ITEM_CHECKBOX_LIMIT) {
+    const p = progress[t.id]?.items ? progress[t.id] : { items: Array(t.countTarget).fill(false) };
     const grid = el('div', 'item-grid');
-    for (let i = 0; i < t.count; i++) {
+    for (let i = 0; i < t.countTarget; i++) {
       const lab = el('label', 'item-check');
       const box = el('input');
       box.type = 'checkbox';
       box.checked = Boolean(p.items[i]);
-      box.setAttribute('aria-label', `${t.countUnit} ${i + 1} of ${t.count}`);
+      box.setAttribute('aria-label', `${t.countUnit} ${i + 1} of ${t.countTarget}`);
       box.addEventListener('change', () => {
-        const cur = progress[t.id]?.items ? [...progress[t.id].items] : Array(t.count).fill(false);
+        const cur = progress[t.id]?.items ? [...progress[t.id].items] : Array(t.countTarget).fill(false);
         cur[i] = box.checked;
         progress[t.id] = { items: cur };
         save();
@@ -299,24 +375,24 @@ function countControls(t) {
     const input = el('input', 'count-input');
     input.type = 'number';
     input.min = '0';
-    input.max = String(t.count);
+    input.max = String(t.countTarget);
     input.value = String(done);
-    input.setAttribute('aria-label', `${t.countUnit} done, of ${t.count}`);
+    input.setAttribute('aria-label', `${t.countUnit} done, of ${t.countTarget}`);
     const plus = el('button', 'step-btn', '+');
     plus.type = 'button';
     plus.setAttribute('aria-label', 'One more');
     const setDone = (n) => {
-      progress[t.id] = { done: Math.max(0, Math.min(t.count, Math.floor(n) || 0)) };
+      progress[t.id] = { done: Math.max(0, Math.min(t.countTarget, Math.floor(n) || 0)) };
       save();
       render();
     };
     minus.addEventListener('click', () => setDone(countDone(t) - 1));
     plus.addEventListener('click', () => setDone(countDone(t) + 1));
     input.addEventListener('change', () => setDone(Number(input.value)));
-    row.append(minus, input, plus, el('span', 'count-of', `of ${t.count} ${t.countUnit}`));
+    row.append(minus, input, plus, el('span', 'count-of', `of ${t.countTarget} ${t.countUnit}`));
     wrap.append(row);
   }
-  if (done >= t.count && !earned.has(t.id)) {
+  if (done >= t.countTarget && !earned.has(t.id)) {
     wrap.append(el('p', 'count-done-note', 'Count complete — tick the trophy itself at the top of this guide when it pops.'));
   }
   return wrap;
@@ -358,7 +434,7 @@ function renderDetail() {
       wrap.append(el('h4', 'steps-title', 'How to earn it'));
       wrap.append(steps);
     }
-    if (t.count) wrap.append(countControls(t));
+    if (t.countTarget) wrap.append(countControls(t));
     wrap.append(sourceList(t));
   }
   detailEl.append(wrap);
@@ -400,7 +476,7 @@ function renderNextUp() {
       detailEl.scrollIntoView({ block: 'nearest' });
     });
     li.append(btn);
-    const meta = el('span', 'next-meta', `${gradeLabel(t.grade)} · Phase ${t.phase}` + (t.missable ? ' · Missable' : '') + (t.count && !hidden ? ` · ${countDone(t)}/${t.count}` : ''));
+    const meta = el('span', 'next-meta', `${gradeLabel(t.grade)} · Phase ${t.phase}` + (t.missable ? ' · Missable' : '') + (t.countTarget && !hidden ? ` · ${countDone(t)}/${t.countTarget}` : ''));
     li.append(meta);
     nextUpEl.append(li);
   }

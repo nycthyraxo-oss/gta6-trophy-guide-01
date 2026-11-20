@@ -27,11 +27,20 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 // v2 adds: every trophy carries a non-blank guide, a roadmap phase 1-5 and a
 // risk tier, and every countable target is a positive integer — the app's
 // two-level tracking and risk views trust these fields.
+// v3 renames the countable target to countTarget (it is the number to reach,
+// not a running count) and also checks what the bibliography and audit strip
+// trust: unique ids, a steps array, and at least one cited source with a name
+// and a URL per trophy.
 const trophyData = JSON.parse(readFileSync(join(here, 'app', 'data', 'trophies.json'), 'utf8'));
 if (!Array.isArray(trophyData.trophies) || trophyData.trophies.length !== 55) {
   throw new Error(`Leonida Ledger expects 55 trophies, found ${trophyData.trophies?.length ?? 'none'}`);
 }
+const seenIds = new Set();
 for (const t of trophyData.trophies) {
+  if (!Number.isInteger(t.id) || seenIds.has(t.id)) {
+    throw new Error(`Leonida Ledger: trophy ${t.name} has a missing or duplicate id`);
+  }
+  seenIds.add(t.id);
   if (typeof t.guide !== 'string' || t.guide.trim() === '') {
     throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no guide`);
   }
@@ -41,8 +50,14 @@ for (const t of trophyData.trophies) {
   if (!['high', 'watch', 'safe'].includes(t.risk)) {
     throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no risk tier`);
   }
-  if (t.count !== undefined && (!Number.isInteger(t.count) || t.count <= 0 || typeof t.countUnit !== 'string')) {
+  if (t.countTarget !== undefined && (!Number.isInteger(t.countTarget) || t.countTarget <= 0 || typeof t.countUnit !== 'string')) {
     throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has a bad count target`);
+  }
+  if (!Array.isArray(t.steps) || t.steps.some((s) => typeof s !== 'string')) {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) has no steps array`);
+  }
+  if (!Array.isArray(t.sources) || t.sources.length === 0 || t.sources.some((s) => typeof s?.name !== 'string' || typeof s?.url !== 'string')) {
+    throw new Error(`Leonida Ledger: trophy ${t.id} (${t.name}) cites no source`);
   }
 }
 
